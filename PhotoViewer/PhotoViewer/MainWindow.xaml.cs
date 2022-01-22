@@ -1,18 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
 
 namespace PhotoViewer
 {
@@ -27,42 +18,50 @@ namespace PhotoViewer
         }
         private int _currentImage = 0;
 
-        public List<Photo> Photos { get; set; }
-        public Process myProcess { get; set; }
-
-        public void LoadImages(string filePath)
-        {
-            FileManager fileManager = new FileManager();
-            List<Photo> photos = fileManager.LoadImgsInDir(filePath);
-            Photos = photos;
-            foreach (var item in photos)
-            {
-                Console.WriteLine(item.Name);
-            }
-            MainViewer.Source = photos.First().Image;
-        }
+        private string _filePath = @"E:\Lagring\(E) Billeder\Shot on Canon\12-01-2020 gåtur med nico";
+        public List<Photo> Photos { get; set; } = new List<Photo>();
+        Task<Photo> HighPhoto { get; set; }
+        CancellationTokenSource cts = new CancellationTokenSource();
 
         private void loadImgs_Click(object sender, RoutedEventArgs e)
         {
-            LoadImages(@"E:\Lagring\(E) Billeder\Shot on Canon\Hjemme ved forlæder\efter jul");
+            LoadImages(_filePath);
         }
 
-        private void prevBtn_Click(object sender, RoutedEventArgs e)
+        public void LoadImages(string dirPath)
+        {
+            Photos = FileManager.LoadLowPhotosInDir(dirPath);
+            MainViewer.Source = Photos.First().Image;
+        }
+
+        private async void prevBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_currentImage > 0)
-                MainViewer.Source = Photos[--_currentImage].Image;
-            Check();
+                await ShowPhoto(--_currentImage);
+            UpdateButtons();
         }
 
         private async void nextBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentImage < Photos.Count-1)
-                MainViewer.Source = Photos[++_currentImage].Image;
-            Check();
-            //await LoadHigeImg();
+            if (_currentImage < Photos.Count - 1)
+                await ShowPhoto(++_currentImage);
+            UpdateButtons();
         }
 
-        private void Check()
+        private async Task ShowPhoto(int imageToShow)
+        {
+            if (HighPhoto != null)
+                cts.Cancel();
+            cts = new CancellationTokenSource();
+            MainViewer.Source = Photos[imageToShow].Image;
+
+            HighPhoto = FileManager.GetHighPhotoAsync(Photos[imageToShow].Path, cts.Token);
+            Photo highPhoto = await HighPhoto;
+            if (highPhoto != null && Photos[imageToShow].Name == highPhoto.Name)
+                MainViewer.Source = highPhoto.Image;
+        }
+
+        private void UpdateButtons()
         {
             if (_currentImage < Photos.Count - 1)
                 nextBtn.IsEnabled = true;
@@ -72,22 +71,6 @@ namespace PhotoViewer
                 prevBtn.IsEnabled = true;
             else
                 prevBtn.IsEnabled = false;
-        }
-
-
-        private async Task LoadHigeImg()
-        {
-            using (myProcess = new Process())
-            {
-                BitmapImage image = new BitmapImage();
-                image.BeginInit();
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.UriSource = new Uri(Photos[_currentImage].Path);
-                image.EndInit();
-                MainViewer.Source = image;
-                myProcess = null;
-            }
-           
         }
     }
 }

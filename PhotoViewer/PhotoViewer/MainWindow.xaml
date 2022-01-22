@@ -10,7 +10,7 @@
         <Image x:Name="MainViewer" Margin="10,47,10,46"/>
         <Button x:Name="loadImgs" Content="Load all" Margin="10,10,0,0" Click="loadImgs_Click" HorizontalAlignment="Left" Width="93" Height="20" VerticalAlignment="Top"/>
         <Button x:Name="nextBtn" Content="Next" Margin="0,0,10,10" Click="nextBtn_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75"/>
-        <Button x:Name="prevBtn" RenderOptions.BitmapScalingMode="NearestNeighbor" Content="Prev" Margin="10,0,0,10" Click="prevBtn_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75"/>
+        <Button x:Name="prevBtn" Content="Prev" Margin="10,0,0,10" Click="prevBtn_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="75"/>
 
     </Grid>
 </Window>

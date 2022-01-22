@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 
 namespace PhotoViewer
 {
@@ -14,5 +13,6 @@ namespace PhotoViewer
         public string Name { get; }
         public ImageSource Image { get; }
         public string Path { get; }
+
     }
 }
