@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,30 +24,39 @@ namespace PhotoViewer
         public List<Photo> Photos { get; set; } = new List<Photo>();
         Task<Photo> HighPhoto { get; set; }
         CancellationTokenSource cts = new CancellationTokenSource();
+        private string _rawFileType = ".CR2";
 
         private void loadImgs_Click(object sender, RoutedEventArgs e)
         {
             LoadImages(_filePath);
         }
 
-        public void LoadImages(string dirPath)
+        public async void LoadImages(string dirPath)
         {
             Photos = FileManager.LoadLowPhotosInDir(dirPath);
             MainViewer.Source = Photos.First().Image;
+            UpdateButtons();
+            await ShowPhoto(_currentImage);
         }
 
         private async void prevBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_currentImage > 0)
-                await ShowPhoto(--_currentImage);
-            UpdateButtons();
+            {
+                --_currentImage;
+                UpdateButtons();
+                await ShowPhoto(_currentImage);
+            }
         }
 
         private async void nextBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_currentImage < Photos.Count - 1)
-                await ShowPhoto(++_currentImage);
-            UpdateButtons();
+            {
+                ++_currentImage;
+                UpdateButtons();
+                await ShowPhoto(_currentImage);
+            }
         }
 
         private async Task ShowPhoto(int imageToShow)
@@ -107,6 +117,15 @@ namespace PhotoViewer
                 default:
                     break;
             }
+        }
+        private void openImg_Click(object sender, RoutedEventArgs e)
+        {
+            string path = Path.GetDirectoryName(Photos[_currentImage].Path);
+            path = Path.Combine(path, Path.GetFileNameWithoutExtension(Photos[_currentImage].Name)+_rawFileType);
+            if (File.Exists(path))
+                System.Diagnostics.Process.Start(path);
+            else
+                System.Diagnostics.Process.Start(Photos[_currentImage].Path);
         }
     }
 }
