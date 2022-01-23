@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-
+using System.Windows.Input;
 
 namespace PhotoViewer
 {
@@ -50,15 +51,29 @@ namespace PhotoViewer
 
         private async Task ShowPhoto(int imageToShow)
         {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
             if (HighPhoto != null)
                 cts.Cancel();
             cts = new CancellationTokenSource();
+            this.Title = "PhotoViewer - " + Photos[imageToShow].Name;
             MainViewer.Source = Photos[imageToShow].Image;
+            setExifData(Photos[imageToShow]);
 
             HighPhoto = FileManager.GetHighPhotoAsync(Photos[imageToShow].Path, cts.Token);
             Photo highPhoto = await HighPhoto;
             if (highPhoto != null && Photos[imageToShow].Name == highPhoto.Name)
+            {
                 MainViewer.Source = highPhoto.Image;
+                setExifData(highPhoto);
+            }
+
+        }
+
+        private void setExifData(Photo photo)
+        {
+            exifData1.Text = "Focal Length: " + photo.FocalLength + "\nExposure Bias: " + photo.ExposureBias + "\nName: " + photo.Name;
+            exifData2.Text = "Exposure: " + photo.Exposure + "\nF-Stop: " + photo.FStop + "\nISO: " + photo.Iso;
         }
 
         private void UpdateButtons()
@@ -71,6 +86,27 @@ namespace PhotoViewer
                 prevBtn.IsEnabled = true;
             else
                 prevBtn.IsEnabled = false;
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            var window = Window.GetWindow(this);
+            window.KeyDown += HandleKeyPress;
+        }
+
+        private void HandleKeyPress(object sender, KeyEventArgs e)
+        {
+            switch (e.Key) 
+            {
+                case Key.Left:
+                    prevBtn_Click(null, null);
+                    break;
+                case Key.Right:
+                    nextBtn_Click(null, null);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
