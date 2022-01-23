@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace PhotoViewer
 {
@@ -17,10 +18,11 @@ namespace PhotoViewer
         public MainWindow()
         {
             InitializeComponent();
+            resetZoom.Click += zoomBorder.resetZoom_Click;
         }
         private int _currentImage = 0;
 
-        private string _filePath = @"E:\Lagring\(E) Billeder\Shot on Canon\12-01-2020 gåtur med nico";
+        private string _filePath = @"E:\Lagring\(E) Billeder\Shot on sony\26-05-2021";
         public List<Photo> Photos { get; set; } = new List<Photo>();
         Task<Photo> HighPhoto { get; set; }
         CancellationTokenSource cts = new CancellationTokenSource();
@@ -127,5 +129,6 @@ namespace PhotoViewer
             else
                 System.Diagnostics.Process.Start(Photos[_currentImage].Path);
         }
+
     }
 }
